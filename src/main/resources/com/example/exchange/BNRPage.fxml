@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Line?>
+
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.shape.Rectangle?>
+<AnchorPane fx:id="mainBackground" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="484.0" prefWidth="747.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.exchange.ExchangeController">
+   <children>
+      <AnchorPane fx:id="converterBackground" layoutY="30" prefHeight="650.0" prefWidth="240.0">
+         <children>
+            <Label layoutX="22.0" layoutY="31.0" text="Change from" />
+            <Label layoutX="22.0" layoutY="71.0" text="In" />
+            <Label layoutX="22.0" layoutY="131.0" text="Amount" />
+            <Label layoutX="22.0" layoutY="180.0" text="Result" />
+            <ComboBox fx:id="inputCurrency" layoutX="138.0" layoutY="26.0" prefHeight="26.0" prefWidth="85.0" />
+            <ComboBox fx:id="outputCurrency" layoutX="138.0" layoutY="66.0" prefHeight="26.0" prefWidth="85.0" />
+            <Button fx:id="currenciesSwapper" layoutX="200" layoutY="96" minHeight="10" prefHeight="22" prefWidth="20" text="SW" />
+            <TextField fx:id="sumField" layoutX="99.0" layoutY="127.0" prefHeight="26.0" prefWidth="125.0" />
+            <TextField fx:id="resultField" layoutX="99.0" layoutY="175.0" prefHeight="26.0" prefWidth="125.0" />
+            <Label layoutX="86.0" layoutY="249.0" text="TVA Calculator" />
+            <Label fx:id="TVAFromCurrentSum" layoutX="24.0" layoutY="293.0" text="Current TVA" />
+            <Label layoutX="24.0" layoutY="341.0" text="Result + TVA" />
+            <TextField fx:id="TVAFromAmount" layoutX="118.0" layoutY="289.0" prefHeight="26.0" prefWidth="105.0" />
+            <TextField fx:id="resultWithTVA" layoutX="118.0" layoutY="337.0" prefHeight="26.0" prefWidth="105.0" />
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="chartBackground" layoutX="240.0" layoutY="30.0" prefHeight="650.0" prefWidth="1080.0">
+         <children>
+            <ComboBox fx:id="chartCurrencies" layoutX="60.0" layoutY="20" prefHeight="20" prefWidth="70" />
+            <ComboBox fx:id="chartYear" layoutX="150.0" layoutY="20" prefHeight="20" prefWidth="70"/>
+            <Slider fx:id="currencyValueScale" orientation="VERTICAL" layoutX="15" layoutY="60" prefWidth="25" prefHeight="547" min="0" max="100" showTickMarks="true" showTickLabels="true" snapToTicks="true"/>
+            <AnchorPane fx:id="chart" layoutX="60" layoutY="65" prefHeight="540" prefWidth="995">
+               <children>
+
+               </children>
+            </AnchorPane>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>

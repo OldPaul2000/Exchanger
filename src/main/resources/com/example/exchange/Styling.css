@@ -1,0 +1,45 @@
+#converterBackground{
+
+}
+
+#chartBackground{
+    -fx-background-color: #01223B;
+}
+
+#chart{
+    -fx-background-color: linear-gradient(to right, #002F4D, #0061A0);
+}
+
+#chartCurrencies{
+    -fx-background-radius: 10 5 10 5;
+    -fx-background-color : #00A8A4;
+}
+#chartCurrencies .list-cell{
+        -fx-background-radius: 5 10 5 5;
+        -fx-background-color: linear-gradient(from 100% 0% to 0% 100%, #00C8C3, #007774);
+        -fx-pref-width: 20;
+        -fx-pref-height: 28;
+}
+#chartCurrencies .list-cell:hover {
+       -fx-background-color : #008A87;
+}
+#chartCurrencies .list-view{
+       -fx-background-color : #00524F;
+}
+
+#chartYear{
+     -fx-background-radius: 10 5 10 5;
+     -fx-background-color : #00A8A4;
+}
+#chartYear .list-cell{
+      -fx-background-radius: 5 10 5 5;
+      -fx-background-color: linear-gradient(from 100% 0% to 0% 100%, #00C8C3, #007774);
+      -fx-pref-width: 20;
+      -fx-pref-height: 28;
+}
+#chartYear .list-cell:hover {
+       -fx-background-color : #008A87;
+}
+#chartYear .list-view{
+       -fx-background-color : #00524F;
+}
