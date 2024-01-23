@@ -1,45 +1,85 @@
-#converterBackground{
+#windowBar{
+    -fx-background-radius: 0 0 0 0;
+    -fx-background-color: linear-gradient(from 0% 0% to 30% 0%, transparent, #5692BF);
+}
 
+#minimize,
+#maximize,
+#closeButton{
+    -fx-background-radius: 0 0 0 0;
+}
+
+#minimize:hover{
+    -fx-background-color: #D4D4D4;
+}
+
+#closeButton:hover{
+    -fx-background-color: #F61010;
+}
+
+#converterBackground{
+    -fx-background-color: linear-gradient(to right, #084471, #69869C);
 }
 
 #chartBackground{
-    -fx-background-color: #01223B;
+    //-fx-background-color: #01223B;
+    -fx-background-color: linear-gradient(to right, #01223B, #00467B);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, -6, 0);
 }
 
 #chart{
     -fx-background-color: linear-gradient(to right, #002F4D, #0061A0);
 }
 
-#chartCurrencies{
+
+.combo-box {
     -fx-background-radius: 10 5 10 5;
     -fx-background-color : #00A8A4;
-}
-#chartCurrencies .list-cell{
-        -fx-background-radius: 5 10 5 5;
-        -fx-background-color: linear-gradient(from 100% 0% to 0% 100%, #00C8C3, #007774);
-        -fx-pref-width: 20;
-        -fx-pref-height: 28;
-}
-#chartCurrencies .list-cell:hover {
-       -fx-background-color : #008A87;
-}
-#chartCurrencies .list-view{
-       -fx-background-color : #00524F;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.2) , 10, 0 , 0 , 8 );
+} .list-cell{
+    -fx-background-radius: 5 10 5 5;
+    -fx-background-color: linear-gradient(from 100% 0% to 0% 100%, #00C8C3, #007774);
+    -fx-pref-width: 20;
+    -fx-pref-height: 28;
+} .list-cell:hover{
+    -fx-background-color : #008A87;
+} .list-view{
+    -fx-background-color : #00524F;
 }
 
-#chartYear{
-     -fx-background-radius: 10 5 10 5;
-     -fx-background-color : #00A8A4;
+
+#currencyValueScale .track{
+      -fx-background-color: transparent;
+} .thumb{
+      -fx-background-color: transparent;
 }
-#chartYear .list-cell{
-      -fx-background-radius: 5 10 5 5;
-      -fx-background-color: linear-gradient(from 100% 0% to 0% 100%, #00C8C3, #007774);
-      -fx-pref-width: 20;
-      -fx-pref-height: 28;
+
+.button{
+    -fx-background-color: transparent;
 }
-#chartYear .list-cell:hover {
-       -fx-background-color : #008A87;
+
+.text-field{
+   -fx-background-radius: 15 15 15 15;
+   -fx-padding: 0 10 0 10;
+   -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.2) , 10, 0 , 0 , 8 );
+   -fx-effect: innershadow(gaussian , rgba(0,0,0,0.2) , 10, 0 , 5 , 7 );
 }
-#chartYear .list-view{
-       -fx-background-color : #00524F;
+
+#changeFrom,
+#changeTo,
+#amount,
+#result,
+#VATCalculator,
+#VATFromCurrentSum,
+#resultPlusVAT {
+   -fx-text-fill: #ECECEC;
+   -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 10, 0, 2, 4);
 }
+
+#previousMonth,
+#nextMonth {
+   -fx-text-fill: #2A2727;
+   -fx-effect: dropshadow(gaussian, rgba(255,255,255,1), 10, 0, 2, 4);
+}
+
+

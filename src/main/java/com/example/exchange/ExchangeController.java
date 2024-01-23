@@ -1,18 +1,22 @@
 package com.example.exchange;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -25,11 +29,47 @@ import static com.example.exchange.DateFormatTypes.DAY_MONTHNAME_YEAR;
 
 public class ExchangeController {
 
+    private final String STYLE_FILE = "Styling.css";
+    private final Path localPath = FileSystems.getDefault().getPath("C:\\Users\\paulb\\IntellijProjects\\Exchange\\src").toAbsolutePath();
+
+    @FXML
+    public ImageView windowIcon;
+
+    @FXML
+    public Label windowTitle;
+
+    @FXML
+    public Button windowBar;
+
+    @FXML
+    public Button minimize;
+
+    @FXML
+    public Button maximize;
+
+    @FXML
+    public Button closeButton;
+
     @FXML
     public AnchorPane mainBackground;
 
     @FXML
     public AnchorPane converterBackground;
+
+    @FXML
+    public Label changeFrom;
+
+    @FXML
+    public Label changeTo;
+
+    @FXML
+    public Label amount;
+
+    @FXML
+    public Label result;
+
+    @FXML
+    public Label resultPlusVAT;
 
     @FXML
     public ComboBox<String> inputCurrency;
@@ -47,15 +87,18 @@ public class ExchangeController {
     public TextField resultField;
 
     @FXML
-    public Label TVAFromCurrentSum;
+    public Label VATCalculator;
 
     @FXML
-    public TextField TVAFromAmount;
+    public Label VATFromCurrentSum;
 
     @FXML
-    public TextField resultWithTVA;
+    public TextField VATFromAmount;
 
-    private Label onlyDigits = new Label("Only numbers accepted");
+    @FXML
+    public TextField resultWithVAT;
+
+    private Label onlyDigits = new Label("Only numbers accepted!");
     private Label noConnectionMessage = new Label("No connection");
 
 
@@ -102,6 +145,12 @@ public class ExchangeController {
     });
 
     public void initialize() {
+        maximize.setDisable(true);
+
+        setWindowBarProperties();
+        setMinimizeButtonProperties();
+        setCloseButtonProperties();
+
         setOutputTextFieldUneditable();
         setSumFieldInputProperties();
         setDisplayOnlyDigitsLabelProperties();
@@ -140,25 +189,18 @@ public class ExchangeController {
         } else {
             displayNoConnection();
         }
-
-
-        converter.setCurrentTVA(exchangeWebCrawler.getTva());
-
+        converter.setCurrentVAT(exchangeWebCrawler.getTva());
     }
 
     private void initializeBarsHeightsAndColors(){
         int currencyInfoIndex = currencyInfo.size() - 1;
 
-        System.out.println("Currency info index:" + currencyInfoIndex);
         for(int i = chartBars.length - 1; i >= 0; i--){
-            System.out.println("i:" + i);
-            if(i > currencyInfo.size() - 1){
-                System.out.println("i > than chartbars length---chartbars length:" + chartBars.length);
+            if(i > currencyInfo.size() - 2){
                 chartBars[i].setHeight(0);
                 currencyInfoIndex = currencyInfo.size() - 1;
             }
-            else{
-                System.out.println("Initializing bar");
+            if(i <= currencyInfo.size() - 1){
                 double currencyValue = Double.parseDouble(currencyInfo.get(currencyInfoIndex)[2]);
                 chartBars[i].setHeight(calculateBarHeight(currencyValue));
                 chartBars[i].setLayoutY(chart.getPrefHeight() - chartBars[i].getHeight());
@@ -180,9 +222,9 @@ public class ExchangeController {
 
     private int calculateBarHeight(double currencyValue){
         double maxCurrencyValue = databaseInstance.getMaxCurrencyValue(chartCurrencies.getSelectionModel().getSelectedItem());
-        double barHeightRatio = chart.getPrefHeight() / maxCurrencyValue;
+        double barHeightRatio =  chart.getPrefHeight() / maxCurrencyValue;
 
-        return (int)(barHeightRatio * currencyValue);
+        return (int)(Math.abs(barHeightRatio * currencyValue));
     }
 
 
@@ -194,8 +236,6 @@ public class ExchangeController {
     final double X_MONTH_OFFSET = 60;
     final double Y_MONTH = 620;
     final double X_MONTH_LABEL_MOVING_STEP = 45;
-    final double X_START_MONTH_LABEL = 65;
-    final double X_END_MONTH_LABEL = 1010;
 
     final double X_MONTHS_SEPARATOR_OFFSET = 2.5;
     final double Y_START_MONTHS_SEPARATOR = 1;
@@ -217,83 +257,81 @@ public class ExchangeController {
 
     private DecimalFormat decimalFormat = new DecimalFormat("#.####");
 
-    private boolean posPrinted = false;
 
     private void setChartProperties(){
         currencyInfoIndex = currencyInfo.size() - chartBars.length;
 
         chart.setOnMouseDragged(mouseEvent -> {
-            posPrinted = false;
 
             movedRight = true;
             movedLeft = false;
             incrementingStep += 0.25;
-             if(mouseEvent.getSceneX() > slidingPosition && incrementingStep >= 1){
-                 incrementingStep = 0;
+            if(mouseEvent.getSceneX() > slidingPosition && incrementingStep >= 1){
+                incrementingStep = 0;
 
-                 if(currencyInfoIndex >= 0){
-                     for(int i = chartBars.length - 1; i >= 0; i--){
-                         if(chartBars[i].getLayoutX() >= LAST_BAR_POSITION){
-                             chartBars[i].setLayoutX(FIRST_BAR_POSITION);
-                             setBarHeightAndColor(chartBars[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex)[2]),
-                                                               Double.parseDouble(currencyInfo.get(currencyInfoIndex)[3]));
-                             setPriceLabelValue(priceLabels[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex)[2]));
-                             setPriceLabelHeight(priceLabels[i],chartBars[i]);
-                             setPriceLabelDiffValue(pricesDifference[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex)[3]));
-                             setDateLabelValue(currencyDates[i],currencyInfo.get(currencyInfoIndex)[4]);
-                             completeDates[i] = currencyInfo.get(currencyInfoIndex)[4];
-                             currencyInfoIndex--;
-                         }
-                         else {
-                             chartBars[i].setLayoutX(chartBars[i].getLayoutX() + MOVING_STEP);
-                         }
-                         priceLabels[i].setLayoutX(chartBars[i].getLayoutX() + X_PRICE_OFFSET);
-                         pricesDifference[i].setLayoutX(chartBars[i].getLayoutX() + X_PRICE_OFFSET);
-                         currencyDates[i].setLayoutX(chartBars[i].getLayoutX());
-                         if(i < completeDates.length - 1){
-                             setMonthLabelsPosition(currencyDates[i],currencyDates[i + 1],completeDates[i],completeDates[i + 1]);
-                             setMonthLabelsValue(completeDates[i],completeDates[i + 1]);
-                             setMonthSeparatorPosition(chartBars[i + 1],completeDates[i],completeDates[i + 1]);
-                         }
-                     }
-                 }
-                 monthsSeparatorMovedLeft = false;
-             }
+                if(currencyInfoIndex >= 0){
+                    for(int i = chartBars.length - 1; i >= 0; i--){
+                        if(chartBars[i].getLayoutX() >= LAST_BAR_POSITION){
+                            chartBars[i].setLayoutX(FIRST_BAR_POSITION);
+                            setBarHeightAndColor(chartBars[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex)[2]),
+                                    Double.parseDouble(currencyInfo.get(currencyInfoIndex)[3]));
+                            setPriceLabelValue(priceLabels[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex)[2]));
+                            setPriceLabelHeight(priceLabels[i],chartBars[i]);
+                            setPriceLabelDiffValue(pricesDifference[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex)[3]));
+                            setDateLabelValue(currencyDates[i],currencyInfo.get(currencyInfoIndex)[4]);
+                            completeDates[i] = currencyInfo.get(currencyInfoIndex)[4];
+                            currencyInfoIndex--;
+                        }
+                        else {
+                            chartBars[i].setLayoutX(chartBars[i].getLayoutX() + MOVING_STEP);
+                        }
+                        priceLabels[i].setLayoutX(chartBars[i].getLayoutX() + X_PRICE_OFFSET);
+                        pricesDifference[i].setLayoutX(chartBars[i].getLayoutX() + X_PRICE_OFFSET);
+                        currencyDates[i].setLayoutX(chartBars[i].getLayoutX());
+                        if(i < completeDates.length - 1){
+                            setMonthLabelsPosition(currencyDates[i],currencyDates[i + 1],completeDates[i],completeDates[i + 1]);
+                            setMonthSeparatorPosition(chartBars[i + 1],completeDates[i],completeDates[i + 1]);
+                            setMonthLabelsValue(completeDates[i],completeDates[i + 1]);
+                        }
+                    }
+                }
+                monthsSeparatorMovedLeft = false;
+            }
 
-             else if(mouseEvent.getSceneX() < slidingPosition && incrementingStep >= 1){
-                 incrementingStep = 0;
+            else if(mouseEvent.getSceneX() < slidingPosition && incrementingStep >= 1){
+                incrementingStep = 0;
 
-                 movedRight = false;
-                 movedLeft = true;
-                 monthsSeparatorMovedLeft = true;
+                movedRight = false;
+                movedLeft = true;
+                monthsSeparatorMovedLeft = true;
 
-                 if(currencyInfoIndex < currencyInfo.size() - chartBars.length){
-                     for(int i = 0; i < chartBars.length; i++){
-                         if(chartBars[i].getLayoutX() <= FIRST_BAR_POSITION){
-                             chartBars[i].setLayoutX(LAST_BAR_POSITION);
-                             setBarHeightAndColor(chartBars[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex + chartBars.length)[2]),
-                                                               Double.parseDouble(currencyInfo.get(currencyInfoIndex + chartBars.length)[3]));
-                             setPriceLabelValue(priceLabels[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex + chartBars.length)[2]));
-                             setPriceLabelHeight(priceLabels[i],chartBars[i]);
-                             setPriceLabelDiffValue(pricesDifference[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex + chartBars.length)[3]));
-                             setDateLabelValue(currencyDates[i],currencyInfo.get(currencyInfoIndex + chartBars.length)[4]);
-                             completeDates[i] = currencyInfo.get(currencyInfoIndex + chartBars.length)[4];
-                             currencyInfoIndex++;
-                         }
-                         else{
-                             chartBars[i].setLayoutX(chartBars[i].getLayoutX() - MOVING_STEP);
-                         }
-                         priceLabels[i].setLayoutX(chartBars[i].getLayoutX() + X_PRICE_OFFSET);
-                         pricesDifference[i].setLayoutX(chartBars[i].getLayoutX() + X_PRICE_OFFSET);
-                         if(i < completeDates.length - 1){
-                             setMonthSeparatorPosition(chartBars[i],completeDates[i],completeDates[i + 1]);
-                             setMonthLabelsPosition(currencyDates[i],currencyDates[i + 1],completeDates[i],completeDates[i + 1]);
-                             setMonthLabelsValue(completeDates[i + 1],completeDates[i]);
-                         }
-                         currencyDates[i].setLayoutX(chartBars[i].getLayoutX());
-                     }
-                 }
-             }
+                if(currencyInfoIndex < currencyInfo.size() - chartBars.length){
+                    for(int i = 0; i < chartBars.length; i++){
+                        if(chartBars[i].getLayoutX() <= FIRST_BAR_POSITION){
+                            chartBars[i].setLayoutX(LAST_BAR_POSITION);
+                            setBarHeightAndColor(chartBars[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex + chartBars.length)[2]),
+                                    Double.parseDouble(currencyInfo.get(currencyInfoIndex + chartBars.length)[3]));
+                            setPriceLabelValue(priceLabels[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex + chartBars.length)[2]));
+                            setPriceLabelHeight(priceLabels[i],chartBars[i]);
+                            setPriceLabelDiffValue(pricesDifference[i],Double.parseDouble(currencyInfo.get(currencyInfoIndex + chartBars.length)[3]));
+                            setDateLabelValue(currencyDates[i],currencyInfo.get(currencyInfoIndex + chartBars.length)[4]);
+                            completeDates[i] = currencyInfo.get(currencyInfoIndex + chartBars.length)[4];
+                            currencyInfoIndex++;
+                        }
+                        else{
+                            chartBars[i].setLayoutX(chartBars[i].getLayoutX() - MOVING_STEP);
+                        }
+                        priceLabels[i].setLayoutX(chartBars[i].getLayoutX() + X_PRICE_OFFSET);
+                        pricesDifference[i].setLayoutX(chartBars[i].getLayoutX() + X_PRICE_OFFSET);
+                        if(i < completeDates.length - 1){
+                            setMonthSeparatorPosition(chartBars[i],completeDates[i],completeDates[i + 1]);
+                            setMonthLabelsPosition(currencyDates[i],currencyDates[i + 1],completeDates[i],completeDates[i + 1]);
+                            setMonthLabelsValue(completeDates[i + 1],completeDates[i]);
+                        }
+                        currencyDates[i].setLayoutX(chartBars[i].getLayoutX());
+                    }
+                }
+            }
             slidingPosition = mouseEvent.getSceneX();
         });
     }
@@ -325,9 +363,6 @@ public class ExchangeController {
         LocalDate date1 = LocalDate.parse(fullDate1);
         LocalDate date2 = LocalDate.parse(fullDate2);
 
-//        System.out.println(previousMonthLabelPosition + "---" + nextMonthLabelPosition);
-//        System.out.println(prevDate + "---" + nextDate);
-
 
         if(!movedRight){
             previousMonthLabelPosition -= X_MONTH_LABEL_MOVING_STEP;
@@ -339,32 +374,13 @@ public class ExchangeController {
             movedLeft = false;
         }
 
-
-        if(!posPrinted){
-//           System.out.println("Next x:" + nextMonth.getLayoutX());
-//            System.out.println("Moved left:" + movedLeft);
-//            System.out.println();
-//            System.out.println();
-            posPrinted = true;
-        }
-
         if(date1.getMonthValue() < date2.getMonthValue() && previousMonthLabelPosition < nextMonthLabelPosition){
-//            System.out.println(previousMonthLabelPosition + "---" + nextMonthLabelPosition);
             previousMonth.setLayoutX(previousMonthLabelPosition);
             nextMonth.setLayoutX(nextMonthLabelPosition);
         }
 
-
-//        if(previousMonthLabelPosition > X_END_MONTH_LABEL || previousMonthLabelPosition < X_START_MONTH_LABEL){
-//            System.out.println("first");
-//            previousMonth.setText("");
-//        }
-//        if(nextMonthLabelPosition > X_END_MONTH_LABEL || nextMonthLabelPosition < X_START_MONTH_LABEL){
-//            System.out.println("second");
-//            nextMonth.setText("");
-//        }
-//
     }
+
 
     private void setMonthLabelsValue(String prevDate, String nextDate){
         LocalDate date1 = LocalDate.parse(prevDate);
@@ -419,7 +435,6 @@ public class ExchangeController {
                 LocalDate secondDate = LocalDate.parse(currencyInfo.get(currencyInfoIndex + 1)[4]);
 
                 if(!firstDate.getMonth().equals(secondDate.getMonth())){
-                    System.out.println(firstDate.getMonth() + "---" + secondDate.getMonth());
                     monthChartSeparator.setLayoutX(chartBars[i].getLayoutX() + BAR_WIDTH + X_MONTHS_SEPARATOR_OFFSET);
                     monthChartSeparator.setStartY(Y_START_MONTHS_SEPARATOR);
                     monthChartSeparator.setEndY(chart.getPrefHeight() + Y_END_MONTHS_SEPARATOR_OFFSET);
@@ -430,7 +445,6 @@ public class ExchangeController {
         }
         else{
             monthChartSeparator.setStroke(Color.TRANSPARENT);
-            System.out.println("month chart separator set transparent");
         }
 
         monthChartSeparator.setStyle("-fx-stroke-dash-array: 5 5");
@@ -444,8 +458,6 @@ public class ExchangeController {
         if(currencyInfoIndex < 22){
             currencyInfoIndex = 0;
         }
-
-        boolean monthsAreEqual = false;
 
         for(int i = 0; i < currencyDates.length - 1; i++){
             LocalDate firstDate = null;
@@ -469,7 +481,6 @@ public class ExchangeController {
 
             if(firstDate != null && secondDate != null &&
                !firstDate.getMonth().equals(secondDate.getMonth())){
-                System.out.println(firstDate.getMonth() + "---" + secondDate.getMonth());
                 previousMonth.setText(firstMonth);
                 nextMonth.setText(secondMonth);
                 previousMonth.setLayoutX(chartBars[i].getLayoutX() + X_MONTH_OFFSET);
@@ -477,7 +488,6 @@ public class ExchangeController {
                 previousMonth.setLayoutY(Y_MONTH);
                 nextMonth.setLayoutY(Y_MONTH);
 
-                System.out.println(chartBars[i].getLayoutX() + "---" + chartBars[i + 1].getLayoutX());
                 break;
             }
             currencyInfoIndex++;
@@ -507,11 +517,11 @@ public class ExchangeController {
         for(int i = 0; i < currencyDates.length; i++){
             chart.getChildren().remove(currencyDates[i]);
             Label date = new Label();
-            System.out.println(currencyInfo.size());
-            LocalDate localDate = null;
+            setDatesLabelsStyleColor(date,i);
+            LocalDate localDate;
             String completeDateString = "";
 
-            if(i < currencyInfoIndex){
+            if(i < currencyInfo.size()){
                 localDate = LocalDate.parse(currencyInfo.get(currencyInfoIndex)[4]);
                 date.setText(localDate.getDayOfMonth() + "");
                 completeDateString = localDate.toString();
@@ -646,8 +656,8 @@ public class ExchangeController {
                 calculateConversionsAndUpdateTextFields(newValue);
             } else {
                 resultField.setText("");
-                TVAFromAmount.setText("");
-                resultWithTVA.setText("");
+                VATFromAmount.setText("");
+                resultWithVAT.setText("");
             }
         });
 
@@ -668,9 +678,9 @@ public class ExchangeController {
         double inputValue = Double.parseDouble(doubleInput);
         double firstCurrency = currenciesInitialsAndValue.get(inputCurrency.getValue());
         double secondCurrency = currenciesInitialsAndValue.get(outputCurrency.getValue());
-        resultField.setText(withoutTVA.format(converter.convertCurrenciesWithoutTva(inputValue, firstCurrency, secondCurrency)));
-        TVAFromAmount.setText(TVAFromCurrentAmount.format(converter.getCalculatedTva()));
-        resultWithTVA.setText(withTVA.format(converter.convertCurrenciesWithTva(inputValue, firstCurrency, secondCurrency)));
+        resultField.setText(withoutTVA.format(converter.convertCurrenciesWithoutVAT(inputValue, firstCurrency, secondCurrency)));
+        VATFromAmount.setText(TVAFromCurrentAmount.format(converter.getCalculatedVAT()));
+        resultWithVAT.setText(withTVA.format(converter.convertCurrenciesWithVAT(inputValue, firstCurrency, secondCurrency)));
     }
 
     private void removeOnlyDigitsWarning() {
@@ -708,11 +718,11 @@ public class ExchangeController {
         onlyDigits.setLayoutX(99);
         onlyDigits.setLayoutY(155);
         onlyDigits.setFont(Font.font(11));
-        onlyDigits.setTextFill(Color.valueOf("FF4700"));
+        onlyDigits.setTextFill(Color.valueOf("F18F1C"));
     }
 
     private void putTVAValueInLabel() {
-        TVAFromCurrentSum.setText("TVA(" + (int) exchangeWebCrawler.getTva() + "%)");
+        VATFromCurrentSum.setText("VAT(" + (int) exchangeWebCrawler.getTva() + "%)");
     }
 
     private void initializeChartYear(){
@@ -803,32 +813,134 @@ public class ExchangeController {
 
     private void setOutputTextFieldUneditable() {
         resultField.setEditable(false);
-        TVAFromAmount.setEditable(false);
-        resultWithTVA.setEditable(false);
+        VATFromAmount.setEditable(false);
+        resultWithVAT.setEditable(false);
     }
 
+    private void setDatesLabelsStyleColor(Label label, int labelIndex){
+        int r = 96;
+        int g = 116;
+        int b = 116;
+        label.setTextFill(Color.rgb(r + labelIndex * 2, g + labelIndex * 2, b + labelIndex * 2));
+    }
+
+    private double mouseXPositionInWindow = 0;
+    private double mouseYPositionInWindow = 0;
+
+    private void setWindowBarProperties(){
+        windowBar.setOnMousePressed(mouseEvent -> {
+            mouseXPositionInWindow = mouseEvent.getSceneX();
+            mouseYPositionInWindow = mouseEvent.getSceneY();
+        });
+
+        windowBar.setOnMouseDragged(mouseEvent -> {
+            ExchangeApp.stage.setX(mouseEvent.getScreenX() - mouseXPositionInWindow);
+            ExchangeApp.stage.setY(mouseEvent.getScreenY() - mouseYPositionInWindow);
+        });
+    }
+
+    private void setMinimizeButtonProperties(){
+        minimize.setOnMouseClicked(mouseEvent -> {
+            ExchangeApp.stage.setIconified(true);
+        });
+    }
+
+    public void setCloseButtonProperties(){
+        closeButton.setOnMouseClicked(mouseEvent -> {
+            databaseInstance.closeDatabase();
+            System.exit(0);
+        });
+    }
+
+    private void setWindowTitle(String title){
+        windowTitle.setText(title);
+    }
+
+    private void setWindowIcon(String imageLocation){
+        Image windowIconImage = new Image(imageLocation);
+        windowIcon.setImage(windowIconImage);
+        windowIcon.setFitWidth(17);
+        windowIcon.setFitHeight(17);
+    }
+
+    private void setMinimizeButtonIcon(Button button, String imageLocation){
+        Image icon = new Image(imageLocation);
+        ImageView imageView = new ImageView(icon);
+        imageView.setFitHeight(10);
+        imageView.setFitWidth(10);
+        button.setMinHeight(10);
+        button.setPadding(new Insets(0,0,0,0));
+        button.setGraphic(imageView);
+    }
+
+    private void setCloseButtonIcon(Button button, String imageLocation){
+        Image icon = new Image(imageLocation);
+        ImageView imageView = new ImageView(icon);
+        imageView.setFitHeight(15);
+        imageView.setFitWidth(15);
+        button.setMinHeight(10);
+        button.setPadding(new Insets(0,0,0,0));
+        button.setGraphic(imageView);
+    }
+
+    private void setMaximizeButtonIcon(Button button, String imageLocation){
+        Image icon = new Image(imageLocation);
+        ImageView imageView = new ImageView(icon);
+        imageView.setFitHeight(10);
+        imageView.setFitWidth(10);
+        button.setMinHeight(10);
+        button.setPadding(new Insets(0,0,0,0));
+        button.setGraphic(imageView);
+    }
+
+    private void setSwapButtonImage(Button button, String imageLocation){
+        Image image = new Image(imageLocation);
+        ImageView imageView = new ImageView(image);
+        imageView.setFitHeight(10);
+        imageView.setFitWidth(15);
+        button.setMinHeight(10);
+        button.setPadding(new Insets(0,0,0,0));
+        button.setGraphic(imageView);
+    }
 
     private void setAllStyles(){
-        final String STYLE_FILE = "Styling.css";
+        setWindowTitle("BNRExchange");
+        setWindowIcon(localPath + File.separator + "currency_icon.png");
 
-        converterBackground.setBackground(new Background(new BackgroundFill(Color.valueOf("89D050"), null, null)));
-        chartBackground.setBackground(new Background(new BackgroundFill(Color.valueOf("519B96"), null, null)));
-        chart.setBackground(new Background(new BackgroundFill(Color.valueOf("005D9C"), null, null)));
+        windowBar.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        minimize.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        setMinimizeButtonIcon(minimize,localPath + File.separator + "window-minimize.png");
+        maximize.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        setMaximizeButtonIcon(maximize,localPath + File.separator + "square.png");
+        closeButton.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        setCloseButtonIcon(closeButton, localPath + File.separator + "cross-small.png");
+        currenciesSwapper.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        setSwapButtonImage(currenciesSwapper, localPath + File.separator + "switch.png");
 
         converterBackground.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
         chartBackground.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
         chart.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
-
         inputCurrency.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
         outputCurrency.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
-        currenciesSwapper.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+
+        changeFrom.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        changeTo.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        amount.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        result.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
         sumField.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
         resultField.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
-        TVAFromAmount.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
-        resultWithTVA.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        VATCalculator.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        VATFromAmount.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        VATFromCurrentSum.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        resultPlusVAT.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        resultWithVAT.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
         chartCurrencies.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
         chartYear.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
         currencyValueScale.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        previousMonth.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        nextMonth.getStylesheets().add(getClass().getResource(STYLE_FILE).toExternalForm());
+        previousMonth.setTextFill(Color.valueOf("9C8B8B"));
+        nextMonth.setTextFill(Color.valueOf("9C8B8B"));
     }
 
 }

@@ -42,9 +42,10 @@ public class ExchangeWebCrawler {
         Elements webPageElements = mainPage.select("*");
         for(int i = 0; i < webPageElements.size(); i++){
             String elementTextLine = webPageElements.get(i).text();
+            System.out.println(elementTextLine);
 
-            if(elementTextLine.matches("TVA \\(\\d+%\\)")){
-                tva = Integer.parseInt(elementTextLine.replaceAll(".* \\((-?\\d+)%\\)","$1"));
+            if(elementTextLine.matches("Procent TVA (\\d+%\\s)(\\d+%\\s?)+")){
+                tva = Integer.parseInt(elementTextLine.replaceAll("Procent TVA ((\\d+)%\\s)(\\d+%\\s?)+","$2"));
             }
 
             if(elementTextLine.matches("(100)?\\p{Upper}{3} .*")){

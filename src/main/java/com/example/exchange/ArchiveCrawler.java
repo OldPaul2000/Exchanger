@@ -100,23 +100,6 @@ public class ArchiveCrawler {
     }
 
 
-    public void downloadAllArchiveDates(){
-        Elements allUrlsFromArchive = mainPage.select("a[href]");
-
-        for(int i = allUrlsFromArchive.size() - 1; i >= 0; i--){
-            String archiveUrl = allUrlsFromArchive.get(i).absUrl("href");
-            if(archiveUrl.matches(".*/arhiva-curs-bnr-\\d{4}-\\d{2}-\\d{2}")){
-                String date = archiveUrl.replaceAll(".*-(\\d{4}-\\d{2}-\\d{2})","$1");
-                archiveDate = LocalDate.parse(date);
-                archives.add(archiveDate);
-            }
-        }
-
-        archives.sort(new ArchivesSorter());
-        lastArchiveDate = archives.get(archives.size() - 1);
-        writeLastArchiveToFile(lastArchiveDate);
-    }
-
     public String getLastArchiveFromFile(){
         String line;
         try(BufferedReader reader = new BufferedReader(new FileReader(lastArchiveFileUrl))){
@@ -166,25 +149,6 @@ public class ArchiveCrawler {
             }
             return 0;
         }
-    }
-
-
-    //Just for testing
-    public void removeLastNDates(int lastDates){
-        for(int i = 0; i < lastDates; i++){
-            archives.remove(ArchiveCrawler.archives.size() - 1);
-        }
-        lastArchiveDate = archives.get(archives.size() - 1);
-        writeLastArchiveToFile(lastArchiveDate);
-    }
-
-    //Just for testing
-    public void printAllDates(DateFormatTypes dateFormatType){
-        for(LocalDate date : archives){
-            System.out.println(date.format(dateFormatType.dateFormat));
-        }
-        System.out.println();
-        //System.out.println("Last date:" + lastArchiveDate);
     }
 
 }

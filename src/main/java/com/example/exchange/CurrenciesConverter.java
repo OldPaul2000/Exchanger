@@ -2,19 +2,19 @@ package com.example.exchange;
 
 public class CurrenciesConverter {
 
-    private double currentTva;
-    private double calculatedTva;
+    private double currentVAT;
+    private double calculatedVAT;
 
-    public double convertCurrenciesWithoutTva(double amount, double currency1, double currency2){
+    public double convertCurrenciesWithoutVAT(double amount, double currency1, double currency2){
         double totalSum = amount * calculateCurrenciesRatio(currency1,currency2);
-        calculateTva(totalSum);
+        calculateVAT(totalSum);
         return totalSum;
     }
 
-    public double convertCurrenciesWithTva(double amount, double currency1, double currency2){
+    public double convertCurrenciesWithVAT(double amount, double currency1, double currency2){
         double totalSum = amount * calculateCurrenciesRatio(currency1,currency2);
-        calculateTva(totalSum);
-        return totalSum + calculatedTva;
+        calculateVAT(totalSum);
+        return totalSum + calculatedVAT;
     }
 
     private double calculateCurrenciesRatio(double firstCurrency, double secondCurrency){
@@ -34,17 +34,17 @@ public class CurrenciesConverter {
         return ratio;
     }
 
-    private double calculateTva(double amount){
-        calculatedTva = (currentTva / 100) * amount;
-        return calculatedTva;
+    private double calculateVAT(double amount){
+        calculatedVAT = (currentVAT / 100) * amount;
+        return calculatedVAT;
     }
 
-    public double getCalculatedTva(){
-        return calculatedTva;
+    public double getCalculatedVAT(){
+        return calculatedVAT;
     }
 
-    public void setCurrentTVA(double tvaValue){
-        currentTva = tvaValue;
+    public void setCurrentVAT(double tvaValue){
+        currentVAT = tvaValue;
     }
 
 }

@@ -23,19 +23,10 @@ public class ArchivesDatabase {
     private final String QUERY_BY_CURRENCY_AND_YEAR = "SELECT * FROM ";
     private final String QUERY_BY_CURRENCY_AND_YEAR_CONDITIONALS = "WHERE Date LIKE ?";
 
-    private final String QUERY_TABLE = "SELECT * FROM ";
-
-    private final String QUERY_ENTRIES_COUNT = "SELECT count(*) FROM ";
-
-    private final String DELETE_ALL = "DELETE FROM ";
 
     private final String INSERT = "INSERT INTO ";
     private final String INSERT_COLUMN_PLACEHOLDERS = "VALUES(?,?,?,?,?)";
 
-
-    private final String DROP_TABLE = "DROP TABLE IF EXISTS ";
-    private final String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS ";
-    private final String TABLE_COLUMNS = "(CurrencyAbbreviation, CurrencyName, CurrencyValue, ValueDifference, Date)";
 
     private PreparedStatement insertValue;
     private PreparedStatement queryCurrencyByYear;
@@ -210,116 +201,6 @@ public class ArchivesDatabase {
             catch (SQLException autocommitException){
                 System.out.println("Error setting autocommit to true");
             }
-        }
-    }
-
-    public void printTableContent(String tableName){
-        tableName = switchAbbreviationAnd100(tableName);
-
-        StringBuilder query = new StringBuilder(QUERY_TABLE);
-        query.append(tableName);
-
-        try(Statement statement = connection.createStatement()){
-            ResultSet content = statement.executeQuery(query.toString());
-
-            while (content.next()){
-                System.out.println(content.getString(1) + "---" + content.getString(2) + "---" + content.getDouble(3) + "---" +
-                        content.getDouble(4) + "---" + content.getString(5));
-            }
-            System.out.println();
-        }
-        catch (SQLException queryException){
-            queryException.printStackTrace();
-            System.out.println(queryException.getMessage());
-        }
-    }
-
-    public int getTableEntriesCount(String tableName){
-        tableName = switchAbbreviationAnd100(tableName);
-        StringBuilder sb = new StringBuilder(QUERY_ENTRIES_COUNT);
-        sb.append(tableName);
-
-        int tableEntries = 0;
-
-        try(Statement statement = connection.createStatement()){
-            ResultSet entriesNumber = statement.executeQuery(sb.toString());
-            tableEntries = entriesNumber.getInt(1);
-        }
-        catch (SQLException countingException){
-            System.out.println(countingException.getMessage());
-        }
-        return tableEntries;
-    }
-
-    public void clearTable(String tableName){
-        tableName = switchAbbreviationAnd100(tableName);
-
-        StringBuilder deleteAllFromTable = new StringBuilder(DELETE_ALL);
-        deleteAllFromTable.append(tableName);
-
-        try(Statement statement = connection.createStatement()){
-            connection.setAutoCommit(false);
-
-            int affectedRows = statement.executeUpdate(deleteAllFromTable.toString());
-            if(affectedRows >= 1){
-                connection.commit();
-            }
-            else {
-                SQLException exception = new SQLException("Deletion exception");
-                System.out.println(exception.getMessage());
-                exception.printStackTrace();
-                throw exception;
-            }
-        }
-        catch (SQLException deletionException){
-            System.out.println(deletionException.getMessage());
-            try {
-                connection.rollback();
-            }
-            catch (SQLException rollbackException){
-                System.out.println(rollbackException.getMessage());
-            }
-        }
-        finally {
-            try {
-                connection.setAutoCommit(true);
-            }
-            catch (SQLException autocommitException){
-                System.out.println(autocommitException.getMessage());
-            }
-        }
-    }
-
-    public void dropTable(String tableName){
-        tableName = switchAbbreviationAnd100(tableName);
-
-        StringBuilder drop = new StringBuilder(DROP_TABLE);
-        drop.append(tableName);
-
-        try(Statement statement = connection.createStatement()){
-            statement.executeUpdate(drop.toString());
-        }
-        catch (SQLException schemaException){
-            System.out.println("Deletion table failed");
-            System.out.println(schemaException.getMessage());
-        }
-    }
-
-
-    public void createTable(String tableName){
-        tableName = switchAbbreviationAnd100(tableName);
-
-        StringBuilder create = new StringBuilder(CREATE_TABLE);
-        create.append(tableName + " ");
-        create.append(TABLE_COLUMNS);
-
-        try(Statement statement = connection.createStatement()){
-            statement.execute(create.toString());
-            System.out.println("Created succesfully:" + tableName);
-        }
-        catch (SQLException creatingTableException){
-            System.out.println("Failed creating table");
-            System.out.println(creatingTableException.getMessage());
         }
     }
 
